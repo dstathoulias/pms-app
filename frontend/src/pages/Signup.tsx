@@ -61,7 +61,7 @@ const Signup = () => {
                 role: formData.role
             };
 
-            await userApi.post('/User/register', payload);
+            await userApi.post('/User/signup', payload);
             toast.success("Account created! Please log in.");
             navigate('/login');
             
