@@ -3,9 +3,12 @@ import axios from 'axios';
 
 // Base URLs for your microservices
 // (In production/docker, these might change, but for now we use localhost)
-const USER_API_URL = 'http://localhost:5001/api';
-const TEAM_API_URL = 'http://localhost:5002/api';
-const TASK_API_URL = 'http://localhost:5003/api';
+// Replace your hardcoded consts with this:
+
+const USER_API_URL = import.meta.env.VITE_USER_API_URL || 'http://localhost:5001/api';
+const TEAM_API_URL = import.meta.env.VITE_TEAM_API_URL || 'http://localhost:5002/api';
+const TASK_API_URL = import.meta.env.VITE_TASK_API_URL || 'http://localhost:5003/api';
+
 
 // Helper to get the token
 const getToken = () => localStorage.getItem('token');
