@@ -3,11 +3,11 @@ services:
     image: postgres:15-alpine
     container_name: pms-postgres
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password123
-      POSTGRES_DB: pms_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -15,10 +15,10 @@ services:
     image: dpage/pgadmin4
     container_name: pms-pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: "admin@pms.com"
-      PGADMIN_DEFAULT_PASSWORD: "admin"
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
-      - "5050:80"
+      - "${PORT_PGADMIN}:80"
     depends_on:
       - postgres
 
@@ -31,9 +31,10 @@ services:
       - postgres
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=pms_users_db;Username=admin;Password=password123
+      # Uses the variables from .env to build the connection string dynamically
+      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
     ports:
-      - "5001:8080"
+      - "${PORT_USER_SERVICE}:8080"
 
   team_service:
     image: ${DOCKER_REGISTRY-}teamservice
@@ -44,9 +45,9 @@ services:
       - postgres
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=pms_teams_db;Username=admin;Password=password123
+      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
     ports:
-      - "5002:8080"
+      - "${PORT_TEAM_SERVICE}:8080"
 
   task_service:
     image: ${DOCKER_REGISTRY-}taskservice
@@ -57,22 +58,28 @@ services:
       - postgres
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=pms_tasks_db;Username=admin;Password=password123
+      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      # Make sure 'GCP__BucketName' is actually needed, or define it in .env if you want to hide it
       - GCP__BucketName=your-google-bucket-name
     ports:
-      - "5003:8080"
+      - "${PORT_TASK_SERVICE}:8080"
 
   frontend:
     image: ${DOCKER_REGISTRY-}frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      # CRITICAL: This passes the variables to the build process so Vite can "bake" them in
+      args:
+        VITE_USER_API_URL: ${VITE_USER_API_URL}
+        VITE_TEAM_API_URL: ${VITE_TEAM_API_URL}
+        VITE_TASK_API_URL: ${VITE_TASK_API_URL}
     ports:
-      - "5000:5004"
+      - "${PORT_FRONTEND}:5004"
     depends_on:
       - user_service
       - team_service
-      - task_service    
+      - task_service
 
 volumes:
   postgres_data:
