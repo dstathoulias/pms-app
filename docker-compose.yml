@@ -1,0 +1,78 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: pms-postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: pms_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pms-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@pms.com"
+      PGADMIN_DEFAULT_PASSWORD: "admin"
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+  user_service:
+    image: ${DOCKER_REGISTRY-}userservice
+    build:
+      context: ./user_service
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=pms_users_db;Username=admin;Password=password123
+    ports:
+      - "5001:8080"
+
+  team_service:
+    image: ${DOCKER_REGISTRY-}teamservice
+    build:
+      context: ./team_service
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=pms_teams_db;Username=admin;Password=password123
+    ports:
+      - "5002:8080"
+
+  task_service:
+    image: ${DOCKER_REGISTRY-}taskservice
+    build:
+      context: ./task_service
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=pms_tasks_db;Username=admin;Password=password123
+      - GCP__BucketName=your-google-bucket-name
+    ports:
+      - "5003:8080"
+
+  frontend:
+    image: ${DOCKER_REGISTRY-}frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5004"
+    depends_on:
+      - user_service
+      - team_service
+      - task_service    
+
+volumes:
+  postgres_data:

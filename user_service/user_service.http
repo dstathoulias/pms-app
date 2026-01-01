@@ -1,0 +1,6 @@
+@user_service_HostAddress = http://localhost:5001
+
+GET {{user_service_HostAddress}}/
+Accept: application/json
+
+###
