@@ -158,7 +158,9 @@ const LeaderTaskManagementPage = () => {
                                         </td>
                                         <td className="px-5 py-4 text-center">
                                             <span className={`px-2 py-1 rounded text-xs font-bold ${
-                                                task.priority === 'High' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                                                task.priority === 'High' ? 'bg-red-100 text-red-700' :
+                                                task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                                                'bg-green-100 text-green-700'
                                             }`}>{task.priority}</span>
                                         </td>
                                         <td className="px-5 py-4 text-center text-sm">{String(task.dueDate)}</td>
