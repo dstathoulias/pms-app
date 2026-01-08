@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+// Configure Swagger with JWT Authentication
 builder.Services.AddSwaggerGen(c => {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme {
         Description = "Enter 'Bearer' [space] and then your token",
@@ -56,6 +57,7 @@ builder.Services.AddCors();
 
 var app = builder.Build();
 
+// Only use Swagger in development environment
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -73,6 +75,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Migrate PostgreSQL database on startup
 using (var scope = app.Services.CreateScope()) {
     var db = scope.ServiceProvider.GetRequiredService<TasksDbContext>();
     db.Database.Migrate();

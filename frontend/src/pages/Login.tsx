@@ -9,7 +9,7 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
-    // --- NEW: Check if already logged in ---
+    // Check if already logged in
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {

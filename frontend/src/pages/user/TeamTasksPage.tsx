@@ -14,7 +14,6 @@ const TeamTasksPage = () => {
     useEffect(() => {
         const loadTeamData = async () => {
             try {
-                // 1. Get My Team
                 const teamRes = await teamApi.get('/Team/my-teams');
                 const myTeams = teamRes.data;
 
@@ -26,7 +25,6 @@ const TeamTasksPage = () => {
                 const currentTeam = myTeams[0]; 
                 setTeam(currentTeam);
 
-                // 2. Fetch Tasks & Users in Parallel
                 const [tasksRes, usersRes] = await Promise.all([
                     taskApi.get(`/Task?leaderId=${currentTeam.leaderId}`),
                     userApi.get('/User') 
@@ -34,7 +32,6 @@ const TeamTasksPage = () => {
 
                 setTasks(tasksRes.data);
 
-                // 3. Create a Lookup Map for User Names
                 const lookup: Record<number, string> = {};
                 usersRes.data.forEach((u: User) => {
                     lookup[u.id] = `${u.firstName} ${u.lastName} (${u.username})`;
@@ -76,7 +73,6 @@ const TeamTasksPage = () => {
                 </button>
             </div>
 
-            {/* Header / Team Info Section */}
             <div className="bg-white p-6 rounded-lg shadow-md mb-8 border-l-4 border-blue-600">
                 <div className="flex justify-between items-start">
                     <div>
@@ -90,7 +86,6 @@ const TeamTasksPage = () => {
                 </div>
             </div>
 
-            {/* Tasks List Section */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <h2 className="text-xl font-bold text-gray-800">Team Tasks</h2>
@@ -161,7 +156,6 @@ const TeamTasksPage = () => {
     );
 };
 
-// --- Helper Functions ---
 const getPriorityColor = (priority: string) => {
     switch (priority?.toLowerCase()) {
         case 'high': return 'bg-red-100 text-red-700';

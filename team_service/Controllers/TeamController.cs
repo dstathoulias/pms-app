@@ -13,11 +13,10 @@ namespace team_service.Controllers;
 public class TeamController(TeamsDbContext context) : ControllerBase {
     private readonly TeamsDbContext _context = context;
 
-    // POST: api/team (Admin Only)
+    // POST: api/team
     [HttpPost]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateTeam([FromBody] TeamRequest request) {
-        // 1. Create Team
         var newTeam = new Team {
             Name = request.Name,
             Description = request.Description,
@@ -28,7 +27,7 @@ public class TeamController(TeamsDbContext context) : ControllerBase {
         _context.Teams.Add(newTeam);
         await _context.SaveChangesAsync();
 
-        // 2. Auto-add the Leader as a Member
+        // Add the leader as a member of the team
         _context.TeamMembers.Add(new TeamMember {
             TeamId = newTeam.Id,
             UserId = request.LeaderId
@@ -44,81 +43,77 @@ public class TeamController(TeamsDbContext context) : ControllerBase {
         return Ok(await _context.Teams.Include(t => t.Members).ToListAsync());
     }
 
-    // POST: api/team/{teamId}/members (Leader Only)
-    // 1. Update Attribute to allow Admins
-[Authorize(Roles = "Team Leader, Admin")] 
-[HttpPost("{teamId}/members")]
-public async Task<IActionResult> AddMember(int teamId, [FromBody] int newMemberUserId) {
-    var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    int currentUserId = int.Parse(userIdString!);
+    // POST: api/team/{teamId}/members
+    [Authorize(Roles = "Team Leader, Admin")] 
+    [HttpPost("{teamId}/members")]
+    public async Task<IActionResult> AddMember(int teamId, [FromBody] int newMemberUserId) {
+        var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        int currentUserId = int.Parse(userIdString!);
 
-    var team = await _context.Teams.FindAsync(teamId);
-    
-    if (team == null) return NotFound("Team not found");
+        var team = await _context.Teams.FindAsync(teamId);
+        
+        if (team == null) return NotFound("Team not found");
 
-    // 3. SECURITY LOGIC:
-    // If the user is NOT an Admin AND they are NOT the leader of this team, block them.
-    if (!User.IsInRole("Admin") && team.LeaderId != currentUserId)
-        return Forbid();
+        // Only allow Admins or the Team Leader to add members
+        if (!User.IsInRole("Admin") && team.LeaderId != currentUserId)
+            return Forbid();
 
-    // SIMPLIFIED CHECK: Ensure not adding duplicates (Good practice)
-    bool alreadyExists = await _context.TeamMembers.AnyAsync(m => m.TeamId == teamId && m.UserId == newMemberUserId);
-    if (alreadyExists) 
-        return BadRequest("User is already in this team.");
+        // Prevent adding the same member twice
+        bool alreadyExists = await _context.TeamMembers.AnyAsync(m => m.TeamId == teamId && m.UserId == newMemberUserId);
+        if (alreadyExists) 
+            return BadRequest("User is already in this team.");
 
-    _context.TeamMembers.Add(new TeamMember {
-        TeamId = teamId,
-        UserId = newMemberUserId
-    });
+        _context.TeamMembers.Add(new TeamMember {
+            TeamId = teamId,
+            UserId = newMemberUserId
+        });
 
-    await _context.SaveChangesAsync();
-    return Ok(new { message = "Member added successfully" });
-}
-
-    [Authorize(Roles = "Team Leader,Admin")] // 1. Allow Admins
-[HttpDelete("{teamId}/members/{memberId}")]
-public async Task<IActionResult> RemoveMember(int teamId, int memberId)
-{
-    var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    int currentUserId = int.Parse(userIdString!);
-
-    var team = await _context.Teams.FindAsync(teamId);
-    if (team == null) return NotFound("Team not found");
-
-    // 2. SECURITY CHECK: Authorization
-    // If not Admin AND not the Team Leader -> Block
-    if (!User.IsInRole("Admin") && team.LeaderId != currentUserId)
-        return Forbid();
-
-    // 3. LOGIC CHECK: Prevent Leader Removal
-    // You cannot remove the person who is currently the leader (even if you are Admin, usually)
-    // because a team must have a leader.
-    if (memberId == team.LeaderId)
-    {
-        return BadRequest("Cannot remove the Team Leader. Promote another member first.");
+        await _context.SaveChangesAsync();
+        return Ok(new { message = "Member added successfully" });
     }
 
-    var member = await _context.TeamMembers
-        .FirstOrDefaultAsync(m => m.TeamId == teamId && m.UserId == memberId);
+    // DELETE: api/team/{teamId}/members/{memberId}
+    [Authorize(Roles = "Team Leader,Admin")]
+    [HttpDelete("{teamId}/members/{memberId}")]
+    public async Task<IActionResult> RemoveMember(int teamId, int memberId)
+    {
+        var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        int currentUserId = int.Parse(userIdString!);
+        var team = await _context.Teams.FindAsync(teamId);
+        if (team == null) return NotFound("Team not found");
 
-    if (member == null) return NotFound("Member not found in this team");
+        // Only allow Admins or the Team Leader to remove members
+        if (!User.IsInRole("Admin") && team.LeaderId != currentUserId)
+            return Forbid();
 
-    _context.TeamMembers.Remove(member);
-    await _context.SaveChangesAsync();
+        // Prevent removing the Team Leader
+        if (memberId == team.LeaderId)
+        {
+            return BadRequest("Cannot remove the Team Leader. Promote another member first.");
+        }
 
-    return Ok(new { message = "Member removed successfully" });
-}
+        var member = await _context.TeamMembers
+            .FirstOrDefaultAsync(m => m.TeamId == teamId && m.UserId == memberId);
+
+        if (member == null) return NotFound("Member not found in this team");
+
+        _context.TeamMembers.Remove(member);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Member removed successfully" });
+    }
     
     // GET: api/team/my-teams
     [HttpGet("my-teams")]
     public async Task<IActionResult> GetMyTeams() {
+        // Admins can see all teams
         if (User.IsInRole("Admin"))
              return Ok(await _context.Teams.Include(t => t.Members).ToListAsync());
 
         var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         int userId = int.Parse(userIdString!);
 
-        // Efficient Query: Get teams where I am a member
+        // Get team ID where the user is a member
         var myTeamIds = await _context.TeamMembers
             .Where(tm => tm.UserId == userId)
             .Select(tm => tm.TeamId)
@@ -132,7 +127,7 @@ public async Task<IActionResult> RemoveMember(int teamId, int memberId)
         return Ok(teams);
     }
 
-    // PUT: api/team/{teamId} (Admin OR Leader)
+    // PUT: api/team/{teamId}
     [Authorize(Roles = "Admin, Team Leader")]
     [HttpPut("{teamId}")]
     public async Task<IActionResult> EditTeam([FromBody] TeamInfo request, int teamId)
@@ -140,6 +135,7 @@ public async Task<IActionResult> RemoveMember(int teamId, int memberId)
         var team = await _context.Teams.FindAsync(teamId);
         if (team == null) return NotFound();
 
+        // Only Admins or the Team Leader can edit team info
         if (!User.IsInRole("Admin")) 
         {
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -156,7 +152,8 @@ public async Task<IActionResult> RemoveMember(int teamId, int memberId)
         return Ok(new { message = "Team updated successfully" });
     }
 
-    [Authorize(Roles = "Admin")] // Strict Admin Access
+    // DELETE: api/team/{id}
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTeam(int id)
     {

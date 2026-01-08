@@ -37,7 +37,6 @@ services:
         condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      # Uses the variables from .env to build the connection string dynamically
       - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${USERS_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
     ports:
       - "${PORT_USER_SERVICE}:8080"
@@ -66,8 +65,7 @@ services:
         condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${TASKS_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-      # Make sure 'GCP__BucketName' is actually needed, or define it in .env if you want to hide it
+      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${TASKS_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD} # Make sure 'GCP__BucketName' is actually needed, or define it in .env if you want to hide it
       - GCP__BucketName=your-google-bucket-name
     ports:
       - "${PORT_TASK_SERVICE}:8080"
@@ -77,7 +75,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      # CRITICAL: This passes the variables to the build process so Vite can "bake" them in
       args:
         VITE_USER_API_URL: ${VITE_USER_API_URL}
         VITE_TEAM_API_URL: ${VITE_TEAM_API_URL}

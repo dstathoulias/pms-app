@@ -4,7 +4,6 @@ import { taskApi, userApi } from '../../api/axios';
 import type { TaskItem, User } from '../../types';
 import { toast } from 'react-toastify';
 
-// Local interface for Attachment structure
 interface Attachment {
     id: number;
     fileName: string;
@@ -21,25 +20,19 @@ const TaskDetailsPage = () => {
     const [attachments, setAttachments] = useState<Attachment[]>([]);
     const [loading, setLoading] = useState(true);
     
-    // Action States
     const [commentInput, setCommentInput] = useState('');
     const [fileInput, setFileInput] = useState<File | null>(null);
 
-    // --- 1. Fetch Data ---
     const loadTaskData = async () => {
         try {
             if (!taskId) return;
 
-            // A. Get Task Details
             const taskRes = await taskApi.get(`/Task/${taskId}`);
             const taskData: TaskItem = taskRes.data;
             setTask(taskData);
 
-            // B. Resolve Assignee Name (if exists)
             if (taskData.assignedToId) {
                 try {
-                    // Optimization: In a real app, you'd have an endpoint like GET /User/{id}
-                    // For now, we fetch the list and find the user (matching your current API)
                     const usersRes = await userApi.get('/User'); 
                     const user = usersRes.data.find((u: User) => u.id === taskData.assignedToId);
                     if (user) setAssigneeName(user.username);
@@ -48,14 +41,13 @@ const TaskDetailsPage = () => {
                 }
             }
 
-            // C. Get Attachments
             const attachRes = await taskApi.get(`/Task/${taskId}/attachments`);
             setAttachments(attachRes.data);
 
         } catch (error) {
             console.error(error);
             toast.error("Failed to load task details.");
-            navigate(-1); // Go back if task not found
+            navigate(-1);
         } finally {
             setLoading(false);
         }
@@ -63,12 +55,10 @@ const TaskDetailsPage = () => {
 
     useEffect(() => { loadTaskData(); }, [taskId]);
 
-    // --- 2. Action Handlers ---
 
     const handleStatusChange = async (newStatus: string) => {
         if (!task) return;
         try {
-            // Send as raw string with JSON content type
             await taskApi.put(`/Task/${task.id}/status`, `"${newStatus}"`, {
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -83,13 +73,12 @@ const TaskDetailsPage = () => {
     const handleAddComment = async () => {
         if (!task || !commentInput.trim()) return;
         try {
-            // Send raw string with JSON content type
             await taskApi.put(`/Task/${task.id}/comment`, `"${commentInput}"`, {
                 headers: { 'Content-Type': 'application/json' }
             });
             toast.success("Comment added");
             setCommentInput('');
-            loadTaskData(); // Refresh to show new comment
+            loadTaskData();
         } catch (error) {
             toast.error("Failed to add comment");
         }
@@ -107,7 +96,7 @@ const TaskDetailsPage = () => {
             });
             toast.success("File uploaded");
             setFileInput(null);
-            loadTaskData(); // Refresh list
+            loadTaskData();
         } catch (error) {
             toast.error("Upload failed");
         }
@@ -116,10 +105,9 @@ const TaskDetailsPage = () => {
     const handleDownload = async (attachmentId: number, fileName: string) => {
         try {
             const response = await taskApi.get(`/Task/attachments/${attachmentId}`, {
-                responseType: 'blob' // Important: Expect a binary file, not JSON
+                responseType: 'blob'
             });
             
-            // Create a virtual link to trigger browser download
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
@@ -143,10 +131,8 @@ const TaskDetailsPage = () => {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
-                {/* LEFT COLUMN: Main Info & Actions */}
                 <div className="lg:col-span-2 space-y-6">
                     
-                    {/* 1. Header Card (Title & Desc) */}
                     <div className="bg-white p-6 rounded shadow border-l-4 border-blue-600">
                         <div className="flex justify-between items-start">
                             <h1 className="text-2xl font-bold text-gray-800">{task.title}</h1>
@@ -162,7 +148,6 @@ const TaskDetailsPage = () => {
                         <p className="mt-4 text-gray-700 whitespace-pre-wrap">{task.description}</p>
                     </div>
 
-                    {/* 2. Status Changer */}
                     <div className="bg-white p-6 rounded shadow">
                         <h3 className="font-bold text-gray-800 mb-4">Update Status</h3>
                         <div className="flex gap-3">
@@ -183,11 +168,9 @@ const TaskDetailsPage = () => {
                         </div>
                     </div>
 
-                    {/* 3. Comments Section */}
                     <div className="bg-white p-6 rounded shadow">
                         <h3 className="font-bold text-gray-800 mb-4">Comments</h3>
                         
-                        {/* Comments Display Area */}
                         <div className="bg-gray-50 p-4 rounded mb-4 h-64 overflow-y-auto border">
                             {task.comments ? (
                                 <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700">
@@ -198,7 +181,6 @@ const TaskDetailsPage = () => {
                             )}
                         </div>
 
-                        {/* Add Comment Input */}
                         <div className="flex gap-2">
                             <input 
                                 value={commentInput}
@@ -216,10 +198,8 @@ const TaskDetailsPage = () => {
                     </div>
                 </div>
 
-                {/* RIGHT COLUMN: Meta Data & Files */}
                 <div className="space-y-6">
                     
-                    {/* 4. Task Details Meta */}
                     <div className="bg-white p-6 rounded shadow">
                         <h3 className="font-bold text-gray-800 mb-4 border-b pb-2">Details</h3>
                         <div className="space-y-4 text-sm">
@@ -238,11 +218,9 @@ const TaskDetailsPage = () => {
                         </div>
                     </div>
 
-                    {/* 5. Attachments */}
                     <div className="bg-white p-6 rounded shadow">
                         <h3 className="font-bold text-gray-800 mb-4 border-b pb-2">Attachments</h3>
                         
-                        {/* File List */}
                         <ul className="mb-4 space-y-2">
                             {attachments.length === 0 && <li className="text-gray-400 text-xs italic">No files attached</li>}
                             {attachments.map(file => (
@@ -258,7 +236,6 @@ const TaskDetailsPage = () => {
                             ))}
                         </ul>
 
-                        {/* File Upload */}
                         <div className="border-t pt-4">
                             <label className="block text-xs font-bold text-gray-500 mb-2">Upload New File</label>
                             <input 
@@ -282,7 +259,6 @@ const TaskDetailsPage = () => {
     );
 };
 
-// --- Helper Functions for Badges ---
 
 const getPriorityColor = (priority: string) => {
     switch (priority?.toLowerCase()) {

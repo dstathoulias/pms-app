@@ -5,7 +5,7 @@ import { jwtDecode } from 'jwt-decode';
 const Sidebar = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const [isOpen, setIsOpen] = useState(false); // Controls if sidebar is visible
+    const [isOpen, setIsOpen] = useState(false);
     const [role, setRole] = useState('');
 
     useEffect(() => {
@@ -27,14 +27,13 @@ const Sidebar = () => {
         navigate('/login');
     };
 
-    // Helper: Navigation Item
     const NavItem = ({ label, path }: { label: string, path: string }) => {
         const isActive = location.pathname === path;
         return (
             <li 
                 onClick={() => {
                     navigate(path);
-                    setIsOpen(false); // Close menu after clicking a link
+                    setIsOpen(false);
                 }}
                 className={`
                     flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-all mb-2 font-medium
@@ -51,21 +50,16 @@ const Sidebar = () => {
 
     return (
         <>
-            {/* --- 1. THE TRIGGER BUTTON (Top Right) --- */}
-            {/* This button is always visible on the page */}
             <button 
                 onClick={() => setIsOpen(true)}
                 className="fixed top-4 right-4 z-50 p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-transform hover:scale-105"
                 title="Open Menu"
             >
-                {/* Simple Hamburger Icon SVG */}
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
                 </svg>
             </button>
 
-            {/* --- 2. BACKDROP OVERLAY --- */}
-            {/* Clicking this dark background closes the menu */}
             {isOpen && (
                 <div 
                     className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity"
@@ -73,31 +67,26 @@ const Sidebar = () => {
                 />
             )}
 
-            {/* --- 3. THE SIDEBAR DRAWER --- */}
             <div className={`
                 fixed top-0 right-0 h-screen w-80 bg-white shadow-2xl z-50 
                 transform transition-transform duration-300 ease-in-out overflow-y-auto
                 ${isOpen ? 'translate-x-0' : 'translate-x-full'} /* Slide in from right */
             `}>
                 
-                {/* Header inside Sidebar */}
                 <div className="p-5 flex items-center justify-between border-b border-gray-200">
                     <span className="font-bold text-xl text-blue-800 tracking-wide">PMS APP</span>
                     <button 
                         onClick={() => setIsOpen(false)}
                         className="p-2 text-gray-500 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors"
                     >
-                        {/* Close (X) Icon */}
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                {/* Menu Items */}
                 <ul className="p-5 space-y-1">
                     
-                    {/* --- ADMIN LINKS --- */}
                     {role === 'Admin' && (
                         <>
                             <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 mt-2">Admin Controls</div>
@@ -109,7 +98,6 @@ const Sidebar = () => {
                         </>
                     )}
 
-                    {/* --- TEAM LEADER LINKS --- */}
                     {role === 'Team Leader' && (
                         <>
                             <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 mt-2">Team Management</div>
@@ -125,7 +113,6 @@ const Sidebar = () => {
                         </>
                     )}
 
-                    {/* --- MEMBER LINKS --- */}
                     {role === 'Member' && (
                         <>
                             <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 mt-2">Menu</div>
@@ -138,7 +125,6 @@ const Sidebar = () => {
                     )}
                 </ul>
 
-                {/* Footer / Logout */}
                 <div className="p-5 border-t border-gray-200 bg-gray-50 absolute bottom-0 w-full">
                     <li 
                         onClick={handleLogout}

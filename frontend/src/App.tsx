@@ -8,7 +8,7 @@ import SignupPage from './pages/Signup';
 
 // --- User/Member ---
 import Dashboard from './pages/user/Dashboard';
-import UserTasksPage from './pages/user/UserTasksPage'; // <--- NEW PAGE
+import UserTasksPage from './pages/user/UserTasksPage';
 import TaskDetailsPage from './pages/user/TaskDetailsPage'; 
 import TaskSearchPage from './pages/user/TaskSearchPage'; 
 
@@ -25,7 +25,7 @@ import AdminTeamsPage from './pages/admin/AdminTeamsPage';
 // --- Components ---
 import ProtectedRoute from './components/ProtectedRoute';
 import TeamRouteHandler from './components/TeamRouteHandler';
-import MainLayout from './components/MainLayout'; // <--- NEW LAYOUT
+import MainLayout from './components/MainLayout';
 
 function App() {
   return (
@@ -33,20 +33,20 @@ function App() {
       <ToastContainer position="top-right" autoClose={3000} />
       
       <Routes>
-        {/* PUBLIC ROUTES (No Sidebar) */}
+        {/* PUBLIC ROUTES*/}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         
-        {/* ================================================= */}
-        {/* PROTECTED ROUTES (Wrapped in Sidebar Layout)      */}
-        {/* ================================================= */}
+
+        {/* PROTECTED ROUTES*/}
+  
         
         <Route element={<ProtectedRoute />}>
-            <Route element={<MainLayout />}> {/* <--- SIDEBAR WRAPPER START */}
+            <Route element={<MainLayout />}>
                 
                 {/* --- Common / Member Routes --- */}
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/my-tasks" element={<UserTasksPage />} /> {/* <--- NEW ROUTE */}
+                <Route path="/my-tasks" element={<UserTasksPage />} />
                 <Route path="/teams" element={<TeamRouteHandler />} />
                 <Route path="/tasks/:taskId" element={<TaskDetailsPage />} />
                 <Route path="/tasks/search" element={<TaskSearchPage />} />
@@ -65,7 +65,7 @@ function App() {
                     <Route path="/admin/teams" element={<AdminTeamsPage />} />
                 </Route>
 
-            </Route> {/* <--- SIDEBAR WRAPPER END */}
+            </Route>
         </Route>
 
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

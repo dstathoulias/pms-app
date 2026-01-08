@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { userApi, teamApi } from '../../api/axios'; // Import teamApi
+import { userApi, teamApi } from '../../api/axios';
 import type { User, Team } from '../../types';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -23,16 +23,13 @@ const AdminUsersPage = () => {
 
     useEffect(() => { fetchUsers(); }, []);
 
-    // 2. Action Handlers
     const handleStatusChange = async (userId: number, isActive: boolean) => {
         if (isActive) {
-            // --- DEACTIVATION FLOW ---
             if (!confirm("Deactivate this user? They will be removed from any teams.")) return;
 
             try {
-                // Step A: Find if user is in a team
-                // (Since we don't have a direct 'getUserTeam' endpoint, we scan teams. 
-                // In a large system, the backend should provide this info, but this works for now.)
+                // Find if user is in a team
+                // Since we don't have a direct 'getUserTeam' endpoint, we scan teams.
                 const teamsRes = await teamApi.get('/Team');
                 const allTeams: Team[] = teamsRes.data;
                 
@@ -44,7 +41,6 @@ const AdminUsersPage = () => {
                     }
                 }
 
-                // Step B: Remove from Team (if found)
                 if (userTeamId) {
                     try {
                         await teamApi.delete(`/Team/${userTeamId}/members/${userId}`);
@@ -55,16 +51,14 @@ const AdminUsersPage = () => {
                     }
                 }
 
-                // Step C: Deactivate User
                 await userApi.put(`/User/${userId}/deactivate`);
                 toast.success("User deactivated successfully");
-                fetchUsers(); // Refresh list
+                fetchUsers();
 
             } catch (error) {
                 toast.error("Deactivation failed");
             }
         } else {
-            // --- ACTIVATION FLOW ---
             try {
                 await userApi.put(`/User/${userId}/activate`);
                 toast.success("User activated successfully");

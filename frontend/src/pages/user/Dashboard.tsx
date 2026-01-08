@@ -31,7 +31,6 @@ const Dashboard = () => {
                 const decoded: JwtPayload = jwtDecode(token);
                 const userRole = decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
 
-                // --- FIX: Only redirect Admin. Leaders are allowed here. ---
                 if (userRole === "Admin") {
                     navigate('/admin', { replace: true });
                     return;
@@ -104,11 +103,9 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
-                {/* Left Column: My Tasks */}
                 <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-bold text-gray-800">My Upcoming Tasks</h2>
-                        {/* FIX: Point to the search page instead of non-existent /tasks */}
                         <button 
                             onClick={() => navigate('/tasks/search')} 
                             className="text-blue-600 text-sm hover:underline"
@@ -162,7 +159,6 @@ const Dashboard = () => {
                     )}
                 </div>
 
-                {/* Right Column: Single Team Details */}
                 <div className="bg-white rounded-lg shadow p-6 h-fit">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-bold text-gray-800">Team Details</h2>
@@ -208,7 +204,6 @@ const Dashboard = () => {
     );
 };
 
-// --- Helpers ---
 const StatCard = ({ title, count, color }: { title: string, count: number, color: string }) => (
     <div className={`${color} text-white p-6 rounded-lg shadow-md`}>
         <h3 className="text-lg font-semibold opacity-90">{title}</h3>

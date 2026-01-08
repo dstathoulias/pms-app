@@ -111,7 +111,6 @@ const TeamManagementPage = () => {
             <h1 className="text-3xl font-bold text-gray-800 mb-8">Manage Team: {team.name}</h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Left: Edit Details */}
                 <div className="bg-white p-6 rounded shadow h-fit">
                     <h2 className="text-xl font-bold mb-4 text-blue-600">Edit Details</h2>
                     <form onSubmit={handleUpdateTeam}>
@@ -137,7 +136,6 @@ const TeamManagementPage = () => {
                     </form>
                 </div>
 
-                {/* Right: Member Management */}
                 <div className="bg-white p-6 rounded shadow h-fit">
                     <h2 className="text-xl font-bold mb-4 text-blue-600">Manage Members</h2>
 
@@ -171,7 +169,6 @@ const TeamManagementPage = () => {
                                     <div>
                                         <div className="flex items-center gap-2">
                                             <span className="font-medium">{m.username}</span>
-                                            {/* ROLE BADGE */}
                                             <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${
                                                 m.id === team.leaderId 
                                                 ? 'bg-blue-100 text-blue-700' 
@@ -183,7 +180,6 @@ const TeamManagementPage = () => {
                                         <p className="text-xs text-gray-500">{m.email}</p>
                                     </div>
                                     
-                                    {/* HIDE REMOVE BUTTON FOR LEADER */}
                                     {m.id !== team.leaderId && (
                                         <button 
                                             onClick={() => handleRemoveMember(m.id)}

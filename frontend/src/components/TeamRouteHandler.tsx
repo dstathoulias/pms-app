@@ -2,7 +2,6 @@ import { Navigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import TeamTasksPage from '../pages/user/TeamTasksPage';
 
-// Helper interface for token claims
 interface JwtPayload {
     role?: string;
     "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string;
@@ -21,19 +20,18 @@ const TeamRouteHandler = () => {
         const userRole = decoded.role || 
                          decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
 
-        // TRAFFIC LOGIC:
-        
-        // 1. Team Leaders -> REDIRECT to their specific Dashboard
+        // Traffic logic:
+        // Team Leader -> redirect to their specific Dashboard
         if (userRole === "Team Leader") {
             return <Navigate to="/team/leader-dashboard" replace />;
         }
 
-        // 2. Admins -> REDIRECT to Admin Dashboard
+        // Admin -> redirect to Admin Dashboard
         if (userRole === "Admin") {
              return <Navigate to="/admin" replace />;
         }
 
-        // 3. Regular Members -> Show the Team Board
+        // Member -> Show the Team Board
         return <TeamTasksPage />;
 
     } catch (error) {

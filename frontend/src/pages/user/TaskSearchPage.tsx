@@ -11,19 +11,15 @@ const TaskSearchPage = () => {
     const [loading, setLoading] = useState(false);
     const [searched, setSearched] = useState(false);
 
-    // Dropdown Data
     const [availableUsers, setAvailableUsers] = useState<User[]>([]);
     const [availableTeams, setAvailableTeams] = useState<Team[]>([]);
 
-    // Search Params
     const [searchType, setSearchType] = useState<'User' | 'Team'>('User');
     const [searchId, setSearchId] = useState('');
 
-    // Filters
     const [statusFilter, setStatusFilter] = useState('');
     const [dateFilter, setDateFilter] = useState('');
 
-    // 1. Fetch Users and Teams for the Dropdowns
     useEffect(() => {
         const fetchDropdownOptions = async () => {
             try {
@@ -69,7 +65,6 @@ const TaskSearchPage = () => {
                 endpoint = `/Task?assignedToId=${searchId}`;
             } 
             else if (searchType === 'Team') {
-                // Find leader ID from the selected team
                 const selectedTeam = availableTeams.find(t => t.id === parseInt(searchId));
                 if (selectedTeam) {
                     endpoint = `/Task?leaderId=${selectedTeam.leaderId}`;
@@ -90,7 +85,6 @@ const TaskSearchPage = () => {
         }
     };
 
-    // Client-side Filtering
     const filteredTasks = tasks.filter(task => {
         if (statusFilter && task.status !== statusFilter) return false;
         if (dateFilter) {
@@ -117,11 +111,9 @@ const TaskSearchPage = () => {
                 </button>
             </div>
 
-            {/* SEARCH & FILTER CARD */}
             <div className="bg-white p-6 rounded shadow mb-8">
                 <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                     
-                    {/* Search Type */}
                     <div>
                         <label className="block text-sm font-bold text-gray-700 mb-1">Search By</label>
                         <select 
@@ -137,7 +129,6 @@ const TaskSearchPage = () => {
                         </select>
                     </div>
 
-                    {/* Dynamic Dropdown Selection */}
                     <div>
                         <label className="block text-sm font-bold text-gray-700 mb-1">
                             Select {searchType}
@@ -165,7 +156,6 @@ const TaskSearchPage = () => {
                         </select>
                     </div>
 
-                    {/* Submit Button */}
                     <div>
                         <button 
                             type="submit" 
@@ -176,7 +166,6 @@ const TaskSearchPage = () => {
                         </button>
                     </div>
                     
-                    {/* Clear Button */}
                     <div>
                         <button 
                             type="button" 
@@ -188,7 +177,6 @@ const TaskSearchPage = () => {
                     </div>
                 </form>
 
-                {/* FILTERS ROW */}
                 <div className="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="md:col-span-2 flex items-center gap-2">
                         <span className="text-sm font-bold text-gray-500 uppercase">Filter Results:</span>
@@ -218,7 +206,6 @@ const TaskSearchPage = () => {
                 </div>
             </div>
 
-            {/* RESULTS TABLE */}
             <div className="bg-white rounded shadow overflow-hidden">
                 <div className="p-4 border-b flex justify-between items-center bg-gray-50">
                     <h2 className="font-bold text-gray-700">Search Results</h2>

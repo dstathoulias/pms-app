@@ -17,7 +17,6 @@ const LeaderTaskManagementPage = () => {
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
 
-    // Form State
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -33,7 +32,6 @@ const LeaderTaskManagementPage = () => {
             const decoded: JwtPayload = jwtDecode(token);
             const leaderId = decoded.nameid || decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
 
-            // 1. Get My Team (to know the members)
             const teamRes = await teamApi.get('/Team/my-teams');
             if (!teamRes.data || teamRes.data.length === 0) {
                 toast.error("No team found.");
@@ -42,19 +40,16 @@ const LeaderTaskManagementPage = () => {
             }
             const myTeam: Team = teamRes.data[0];
 
-            // 2. Get Team Members (Full User Details)
             const userRes = await userApi.get('/User');
             const allUsers: User[] = userRes.data;
             const teamMemberIds = myTeam.members.map(m => m.userId);
             
-            // Filter: Only show users who are in THIS team
             const teamMembers = allUsers.filter(u => 
                 teamMemberIds.includes(u.id) && 
                 u.isActive
             );
             setMembers(teamMembers);
 
-            // 3. Get Tasks (Owned by this leader)
             const taskRes = await taskApi.get(`/Task?leaderId=${leaderId}`);
             setTasks(taskRes.data);
 
@@ -68,8 +63,6 @@ const LeaderTaskManagementPage = () => {
 
     useEffect(() => { loadData(); }, []);
 
-    // --- Actions ---
-
     const handleCreateTask = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
@@ -79,16 +72,16 @@ const LeaderTaskManagementPage = () => {
 
             const payload = {
                 ...formData,
-                leaderId: parseInt(leaderId), // Leader creates it
+                leaderId: parseInt(leaderId),
                 assignedToId: formData.assignedToId ? parseInt(formData.assignedToId) : null,
-                status: 'To Do' // Default status
+                status: 'To Do'
             };
 
             await taskApi.post('/Task', payload);
             toast.success("Task created!");
             setShowCreateModal(false);
             setFormData({ title: '', description: '', priority: 'Medium', dueDate: '', assignedToId: '' });
-            loadData(); // Refresh list
+            loadData();
         } catch (error) {
             toast.error("Failed to create task");
         }

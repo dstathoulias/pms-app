@@ -147,7 +147,6 @@ const AdminTeamsPage = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* CREATE TEAM */}
                 <div className="bg-white p-6 rounded shadow h-fit">
                     <h2 className="text-xl font-bold mb-4 text-blue-600">Create Team</h2>
                     <form onSubmit={handleCreateTeam}>
@@ -182,7 +181,6 @@ const AdminTeamsPage = () => {
                     </form>
                 </div>
 
-                {/* TEAM LIST */}
                 <div className="lg:col-span-2 space-y-4">
                     {teams.map(team => (
                         <div key={team.id} className="bg-white rounded shadow border-l-4 border-green-500 overflow-hidden">
@@ -205,7 +203,6 @@ const AdminTeamsPage = () => {
                                 <div className="p-4 bg-gray-50 border-t border-gray-200">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         
-                                        {/* Edit Info */}
                                         <div>
                                             <h4 className="font-bold text-gray-700 mb-2 text-sm uppercase">Edit Info</h4>
                                             <input 
@@ -221,7 +218,6 @@ const AdminTeamsPage = () => {
                                             <button onClick={() => handleUpdateTeam(team.id)} className="bg-blue-600 text-white px-3 py-1 rounded text-sm">Update Info</button>
                                         </div>
 
-                                        {/* Manage Members */}
                                         <div>
                                             <h4 className="font-bold text-gray-700 mb-2 text-sm uppercase">Members</h4>
                                             
@@ -246,7 +242,6 @@ const AdminTeamsPage = () => {
                                                         <li key={m.userId} className="flex justify-between items-center text-sm bg-white p-2 rounded border">
                                                             <div className="flex items-center gap-2">
                                                                 <span>{user ? user.username : `User ${m.userId}`}</span>
-                                                                {/* ROLE BADGE */}
                                                                 <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
                                                                     m.userId === team.leaderId 
                                                                     ? 'bg-blue-100 text-blue-700' 
@@ -256,7 +251,6 @@ const AdminTeamsPage = () => {
                                                                 </span>
                                                             </div>
                                                             
-                                                            {/* HIDE REMOVE BUTTON FOR LEADER */}
                                                             {team.leaderId !== m.userId && (
                                                                 <button 
                                                                     onClick={() => handleRemoveMember(team.id, m.userId)}

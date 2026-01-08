@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+// Configure Swagger to use JWT Authentication
 builder.Services.AddSwaggerGen(c => {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme {
         Description = "Enter 'Bearer' [space] and then your token",
@@ -30,6 +31,7 @@ builder.Services.AddSwaggerGen(c => {
 builder.Services.AddDbContext<TeamsDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
@@ -56,6 +58,7 @@ builder.Services.AddCors();
 
 var app = builder.Build();
 
+//  Only allow Swagger in Development environment
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -73,6 +76,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Migrate PostgreSQL database on startup
 using (var scope = app.Services.CreateScope()) {
     var db = scope.ServiceProvider.GetRequiredService<TeamsDbContext>();
     db.Database.Migrate();

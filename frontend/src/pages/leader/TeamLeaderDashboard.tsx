@@ -18,18 +18,15 @@ const TeamLeaderDashboard = () => {
     useEffect(() => {
         const fetchLeaderData = async () => {
             try {
-                // 1. Get Leader's ID
                 const token = localStorage.getItem('token');
                 if (!token) return;
                 const decoded: JwtPayload = jwtDecode(token);
                 const userId = decoded.nameid || decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
 
-                // 2. Get Team Info
                 const teamRes = await teamApi.get('/Team/my-teams');
                 if (teamRes.data && teamRes.data.length > 0) {
                     setTeam(teamRes.data[0]);
                     
-                    // 3. Get Task Count
                     const taskRes = await taskApi.get(`/Task?leaderId=${userId}`);
                     setTaskCount(taskRes.data.length);
                 }
@@ -51,7 +48,6 @@ const TeamLeaderDashboard = () => {
                 <div className="flex justify-between items-start mb-2">
                     <h1 className="text-3xl font-bold text-gray-800">Team Leader Dashboard</h1>
                     
-                    {/* NEW BUTTON: Navigate to Personal Dashboard */}
                     <button 
                         onClick={() => navigate('/dashboard')}
                         className="text-blue-600 hover:text-blue-800 font-semibold text-sm mt-2 hover:underline flex items-center"
@@ -68,7 +64,6 @@ const TeamLeaderDashboard = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     
-                    {/* Card 1: Team Management */}
                     <div 
                         onClick={() => navigate('/team/manage')}
                         className="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition cursor-pointer border-l-4 border-indigo-500 group"
@@ -82,7 +77,6 @@ const TeamLeaderDashboard = () => {
                         </div>
                     </div>
 
-                    {/* Card 2: Task Management */}
                     <div 
                         onClick={() => navigate('/team/tasks-manage')} 
                         className="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition cursor-pointer border-l-4 border-emerald-500 group"

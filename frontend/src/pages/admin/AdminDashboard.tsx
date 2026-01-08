@@ -4,7 +4,7 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="bg-transparent"> {/* Layout handles background/padding */}
+        <div className="bg-transparent">
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-800">Admin Control Panel</h1>
                 <p className="text-gray-600">Manage system access, users, and teams.</p>
@@ -12,7 +12,6 @@ const AdminDashboard = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 
-                {/* Manage Users Card */}
                 <div 
                     onClick={() => navigate('/admin/users')}
                     className="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition cursor-pointer border-l-4 border-blue-500 group"
@@ -23,7 +22,6 @@ const AdminDashboard = () => {
                     </p>
                 </div>
 
-                {/* Manage Teams Card */}
                 <div 
                     onClick={() => navigate('/admin/teams')}
                     className="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition cursor-pointer border-l-4 border-purple-500 group"
@@ -34,7 +32,6 @@ const AdminDashboard = () => {
                     </p>
                 </div>
 
-                {/* Global Task Search Card */}
                 <div 
                     onClick={() => navigate('/tasks/search')}
                     className="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition cursor-pointer border-l-4 border-orange-500 group"

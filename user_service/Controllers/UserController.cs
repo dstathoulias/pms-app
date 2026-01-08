@@ -19,7 +19,6 @@ public class UserController(UsersDbContext context, IConfiguration configuration
     // POST: api/user/signup
     [HttpPost("signup")]
     public async Task<IActionResult> SignUp([FromBody] User newUser) {
-        // Prevent DB Crash on duplicate email
         if (await _context.Users.AnyAsync(u => u.Email == newUser.Email))
             return BadRequest("Email already exists.");
 
@@ -29,13 +28,18 @@ public class UserController(UsersDbContext context, IConfiguration configuration
         if (string.IsNullOrEmpty(newUser.Role))
             newUser.Role = "Member"; // Default fallback
 
-        // First user is Admin, others are Members
+        // If the user that registers is the first in the database
+        // make him Admin to avoid a Deadlock
+        // Only an admin can activate members and if no admin exists
+        // the service is useless
         bool isFirstUser = !await _context.Users.AnyAsync();
         if (isFirstUser || newUser.Role == "Admin")
             newUser.IsActive = true;
         else
             newUser.IsActive = false;
 
+        // DO NOT insert the user password in the database
+        // Encrypt it using BCrypt first
         newUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newUser.PasswordHash);
 
         _context.Users.Add(newUser);
@@ -69,35 +73,35 @@ public class UserController(UsersDbContext context, IConfiguration configuration
         return await _context.Users.ToListAsync();
     }
 
-    // PUT: api/user/{id}/activate (Admin Only)
+    // PUT: api/user/{id}/activate
     [Authorize(Roles = "Admin")]
     [HttpPut("{id}/activate")]
     public async Task<IActionResult> ActivateUser(int id) {
         return await UpdateUserStatus(id, u => u.IsActive = true, "Activated");
     }
 
-    // PUT: api/user/{id}/deactivate (Admin Only)
+    // PUT: api/user/{id}/deactivate
     [Authorize(Roles = "Admin")]
     [HttpPut("{id}/deactivate")]
     public async Task<IActionResult> DeactivateUser(int id) {
         return await UpdateUserStatus(id, u => u.IsActive = false, "Deactivated");
     }
 
-    // PUT: api/user/{id}/promote (Admin Only)
+    // PUT: api/user/{id}/promote
     [Authorize(Roles = "Admin")]
     [HttpPut("{id}/promote")]
     public async Task<IActionResult> PromoteMember(int id) {
         return await UpdateUserStatus(id, u => u.Role = "Team Leader", "Promoted to Team Leader");
     }
 
-    // PUT: api/user/{id}/demote (Admin Only)
+    // PUT: api/user/{id}/demote
     [Authorize(Roles = "Admin")]
     [HttpPut("{id}/demote")]
     public async Task<IActionResult> DemoteMember(int id) {
         return await UpdateUserStatus(id, u => u.Role = "Member", "Demoted to Member");
     }
 
-
+    // Helper for updating User info
     private async Task<IActionResult> UpdateUserStatus(int id, Action<User> updateAction, string successMessage) {
         var user = await _context.Users.FindAsync(id);
         if (user == null) return NotFound("User not found");
@@ -107,6 +111,7 @@ public class UserController(UsersDbContext context, IConfiguration configuration
         return Ok(new { message = successMessage });
     }
 
+    // Token generation for cross-API user authorization
     private string GenerateJwtToken(User user) {
         var claims = new List<Claim> {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
