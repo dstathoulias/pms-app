@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
 
 const Sidebar = () => {
     const navigate = useNavigate();
@@ -24,7 +25,8 @@ const Sidebar = () => {
 
     const handleLogout = () => {
         localStorage.removeItem('token');
-        navigate('/login');
+        delete axios.defaults.headers.common['Authorization'];  // IMPORTANT: Clear default auth header
+        window.location.href = '/login';
     };
 
     const NavItem = ({ label, path }: { label: string, path: string }) => {
